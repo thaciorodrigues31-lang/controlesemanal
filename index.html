@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="theme-color" content="#0f172a"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>Controle 05–20 Mai · Thácio</title>
+<style>
+:root{
+  --bg:#0f172a;--bg2:#1e293b;--bg3:#334155;
+  --vd:#22c55e;--vd2:#16a34a;--vd-bg:rgba(34,197,94,.13);
+  --vm:#ef4444;--vm-bg:rgba(239,68,68,.13);
+  --am:#f59e0b;--am-bg:rgba(245,158,11,.13);
+  --az:#60a5fa;--az-bg:rgba(96,165,250,.13);
+  --rx:#a78bfa;
+  --tx:#f1f5f9;--tx2:#94a3b8;
+  --bd:rgba(255,255,255,.09);
+  --rd:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{height:100%;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:15px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 20px);}
+
+.hdr{padding:18px 16px 14px;text-align:center;background:linear-gradient(180deg,#1e293b 0%,var(--bg) 100%);}
+.hdr h1{font-size:1.2rem;font-weight:800;letter-spacing:-.3px;}
+.hdr-sub{font-size:.76rem;color:var(--tx2);margin-top:3px;}
+
+.saldo-box{margin:0 14px 14px;background:var(--bg2);border-radius:var(--rd);padding:18px 16px;text-align:center;border:1px solid var(--bd);}
+.saldo-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--tx2);margin-bottom:5px;}
+.saldo-val{font-size:2.5rem;font-weight:900;letter-spacing:-1px;transition:color .3s;}
+.saldo-val.ok{color:var(--vd);}
+.saldo-val.warn{color:var(--am);}
+.saldo-val.crit{color:var(--vm);}
+.pills{display:flex;gap:7px;justify-content:center;margin-top:11px;flex-wrap:wrap;}
+.pill{background:var(--bg3);border-radius:99px;padding:4px 12px;font-size:.73rem;font-weight:600;color:var(--tx2);}
+.pill span{color:var(--tx);font-weight:800;}
+
+.bar-area{margin:0 14px 14px;}
+.bar-bg{background:var(--bg3);border-radius:99px;height:9px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:99px;transition:width .5s,background .3s;}
+.bar-info{display:flex;justify-content:space-between;font-size:.7rem;color:var(--tx2);margin-top:4px;}
+
+.sec{margin:0 14px 14px;}
+.sec-tit{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--tx2);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+
+/* FORM */
+.form-box{background:var(--bg2);border-radius:var(--rd);padding:14px;border:1px solid var(--bd);}
+.form-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fg label{font-size:.7rem;color:var(--tx2);font-weight:600;}
+.inp{background:var(--bg3);border:1.5px solid var(--bd);border-radius:8px;padding:9px 11px;font-size:.88rem;color:var(--tx);font-family:inherit;transition:border .15s;}
+.inp:focus{outline:none;border-color:var(--az);}
+.inp.erro{border-color:var(--vm);animation:shake .3s;}
+.inp.ok{border-color:var(--vd);}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.erro-msg{font-size:.72rem;color:var(--vm);margin-top:3px;display:none;}
+.erro-msg.vis{display:block;}
+.btn{border:none;border-radius:8px;padding:9px 16px;font-size:.84rem;font-weight:800;cursor:pointer;transition:opacity .15s;}
+.btn:active{opacity:.75;}
+.btn-az{background:var(--az);color:#0f172a;}
+.btn-vd{background:var(--vd);color:#0f172a;}
+.btn-vm{background:var(--vm);color:#fff;}
+.btn-gh{background:var(--bg3);color:var(--tx);font-size:.74rem;padding:6px 11px;}
+.qs{display:flex;gap:6px;flex-wrap:wrap;}
+.q{background:var(--bg3);border:1px solid var(--bd);border-radius:7px;padding:6px 10px;font-size:.73rem;color:var(--tx);cursor:pointer;white-space:nowrap;transition:border .15s;}
+.q:hover{border-color:var(--az);}
+
+/* DIAS */
+.dias-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.dia{background:var(--bg2);border-radius:10px;padding:7px 4px;text-align:center;border:1.5px solid var(--bd);cursor:pointer;transition:all .18s;position:relative;}
+.dia.hoje{border-color:var(--az);box-shadow:0 0 0 2px rgba(96,165,250,.25);}
+.dia.pass{opacity:.45;}
+.dia.forum{border-color:var(--am);}
+.dia.quitado{border-color:rgba(34,197,94,.4);}
+.dia.estouro{border-color:var(--vm);background:rgba(239,68,68,.08);}
+.dia.sel{box-shadow:0 0 0 3px var(--rx);}
+.dia-sem{font-size:.6rem;color:var(--tx2);margin-bottom:2px;}
+.dia-num{font-size:.95rem;font-weight:800;}
+.dia-val{font-size:.67rem;font-weight:700;margin-top:3px;}
+.dia-ico{font-size:.68rem;position:absolute;top:3px;right:4px;}
+
+/* LISTA */
+.li{background:var(--bg2);border-radius:10px;padding:11px 12px;margin-bottom:6px;display:flex;align-items:center;gap:9px;border:1.5px solid var(--bd);transition:border .15s;}
+.li.editando{border-color:var(--rx);}
+.li-ico{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;background:rgba(239,68,68,.15);}
+.li-info{flex:1;min-width:0;}
+.li-desc{font-size:.84rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.li-meta{font-size:.7rem;color:var(--tx2);margin-top:1px;}
+.li-val{font-size:.92rem;font-weight:800;color:var(--vm);flex-shrink:0;}
+.li-acoes{display:flex;gap:4px;flex-shrink:0;}
+.li-btn{background:var(--bg3);border:none;border-radius:6px;padding:5px 7px;font-size:.78rem;cursor:pointer;color:var(--tx2);transition:background .15s;}
+.li-btn:hover{background:var(--bd);color:var(--tx);}
+
+/* MODAL EDIÇÃO */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-bg.vis{opacity:1;pointer-events:all;}
+.modal{background:var(--bg2);border-radius:20px 20px 0 0;padding:20px 16px calc(env(safe-area-inset-bottom,0px)+20px);width:100%;max-width:480px;transform:translateY(100%);transition:transform .25s;}
+.modal-bg.vis .modal{transform:translateY(0);}
+.modal-tit{font-size:.9rem;font-weight:800;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.modal-close{background:var(--bg3);border:none;border-radius:50%;width:28px;height:28px;color:var(--tx2);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+16px);left:50%;transform:translateX(-50%) translateY(20px);background:#1e293b;border:1px solid var(--bd);border-radius:10px;padding:10px 18px;font-size:.82rem;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:200;white-space:nowrap;}
+.toast.vis{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.ok{border-color:var(--vd);color:var(--vd);}
+.toast.err{border-color:var(--vm);color:var(--vm);}
+.toast.info{border-color:var(--az);color:var(--az);}
+
+/* ALERTA */
+.al{border-radius:10px;padding:10px 13px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start;font-size:.8rem;border:1px solid;}
+.al.warn{background:var(--am-bg);border-color:rgba(245,158,11,.3);}
+.al.crit{background:var(--vm-bg);border-color:rgba(239,68,68,.3);}
+.al.ok{background:var(--vd-bg);border-color:rgba(34,197,94,.3);}
+.al.info{background:var(--az-bg);border-color:rgba(96,165,250,.3);}
+.al b{display:block;margin-bottom:1px;font-size:.82rem;}
+
+/* ESTRATÉGIA */
+.est-item{display:flex;gap:9px;margin-bottom:8px;font-size:.8rem;line-height:1.5;color:var(--tx2);}
+.est-item b{color:var(--tx);}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>💳 Controle Pré-Salário</h1>
+  <div class="hdr-sub">05 → 19 de Maio · R$ 500 disponíveis · Só débito Caixa</div>
+</div>
+
+<!-- SALDO -->
+<div class="saldo-box">
+  <div class="saldo-label">Saldo disponível</div>
+  <div class="saldo-val ok" id="saldoEl">R$ 500,00</div>
+  <div class="pills">
+    <div class="pill">Início <span>R$ 500,00</span></div>
+    <div class="pill">Gasto <span id="pGasto">R$ 0,00</span></div>
+    <div class="pill">Teto hoje <span id="pTeto">R$ 33,30</span></div>
+    <div class="pill">Dias restantes <span id="pDias">15</span></div>
+  </div>
+</div>
+
+<!-- BARRA -->
+<div class="bar-area">
+  <div class="bar-bg"><div class="bar-fill" id="barEl" style="width:0%;background:var(--vd)"></div></div>
+  <div class="bar-info"><span id="barLeft">R$ 500,00 restam</span><span id="barPct">0% usado</span></div>
+</div>
+
+<!-- ALERTA -->
+<div class="sec"><div id="alertaEl"></div></div>
+
+<!-- FORM LANÇAMENTO -->
+<div class="sec">
+  <div class="sec-tit">➕ Novo lançamento</div>
+  <div class="form-box">
+    <div class="form-row">
+      <div class="fg" style="flex:2;min-width:130px">
+        <label>Descrição <span id="errDesc" class="erro-msg">— obrigatório</span></label>
+        <input class="inp" id="fDesc" type="text" placeholder="ex: padaria, farmácia..." autocomplete="off" maxlength="50"/>
+      </div>
+      <div class="fg" style="width:110px">
+        <label>Valor (R$) <span id="errVal" class="erro-msg">— inválido</span></label>
+        <input class="inp" id="fVal" type="text" placeholder="0,00" inputmode="decimal"/>
+      </div>
+      <div class="fg" style="width:90px">
+        <label>Dia (05–19)</label>
+        <input class="inp" id="fDia" type="number" min="5" max="19" id="fDia"/>
+      </div>
+    </div>
+    <div class="form-row" style="margin-bottom:0">
+      <button class="btn btn-vd" onclick="lancar()" style="flex:1">✅ Confirmar</button>
+      <button class="btn btn-gh" onclick="limparForm()">🗑 Limpar</button>
+    </div>
+    <div style="margin-top:10px">
+      <div class="sec-tit" style="margin-bottom:6px">Lançamentos rápidos</div>
+      <div class="qs">
+        <div class="q" onclick="rapido('Almoço Fórum','30')">🍽️ Fórum R$30</div>
+        <div class="q" onclick="rapido('Combustível','')">⛽ Combustível</div>
+        <div class="q" onclick="rapido('Mercado','')">🛒 Mercado</div>
+        <div class="q" onclick="rapido('Farmácia','')">💊 Farmácia</div>
+        <div class="q" onclick="rapido('Padaria','')">🥐 Padaria</div>
+        <div class="q" onclick="rapido('Transporte','')">🚗 Transporte</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDÁRIO -->
+<div class="sec">
+  <div class="sec-tit">Calendário <span style="font-size:.68rem;background:var(--am-bg);border:1px solid rgba(245,158,11,.3);border-radius:99px;padding:2px 8px;color:var(--am)">🍽️ Fórum: Qui 08, Ter 13, Qui 15</span></div>
+  <div class="dias-grid" id="diasEl"></div>
+  <div style="font-size:.7rem;color:var(--tx2);margin-top:6px;text-align:center">Toque em um dia para filtrar os lançamentos</div>
+</div>
+
+<!-- LISTA -->
+<div class="sec">
+  <div class="sec-tit">
+    Lançamentos <span id="filtroLabel" style="color:var(--rx);font-size:.68rem"></span>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-gh" onclick="limparFiltro()">Ver todos</button>
+      <button class="btn btn-gh" onclick="exportar()">📤 CSV</button>
+    </div>
+  </div>
+  <div id="listaEl"></div>
+</div>
+
+<!-- ESTRATÉGIA -->
+<div class="sec">
+  <div class="sec-tit">🧭 Regras dos 15 dias</div>
+  <div class="form-box">
+    <div class="est-item"><span>💳</span><div><b>Zero crédito.</b> Caixa débito para tudo. Bradesco encerrado. BB vira secundário.</div></div>
+    <div class="est-item"><span>📅</span><div><b>Teto dinâmico:</b> não é fixo em R$33,30 — se economizar hoje, o teto de amanhã aumenta.</div></div>
+    <div class="est-item"><span>🍽️</span><div><b>Fórum:</b> Qui 08, Ter 13 e Qui 15 — R$30 cada = R$90 total já no orçamento.</div></div>
+    <div class="est-item"><span>⛽</span><div><b>Gasolina:</b> só se essencial. Se não der, espera o dia 20.</div></div>
+    <div class="est-item"><span>🛒</span><div><b>Mercado:</b> só o imprescindível. Compras grandes esperam o salário.</div></div>
+    <div class="est-item"><span>✅</span><div><b>Dia 20:</b> Recebe → 1% Tesouro Selic → paga Bradesco (encerramento) → novo ciclo.</div></div>
+  </div>
+</div>
+
+<!-- MODAL EDIÇÃO -->
+<div class="modal-bg" id="modalBg" onclick="fecharModal(event)">
+  <div class="modal">
+    <div class="modal-tit">
+      ✏️ Editar lançamento
+      <button class="modal-close" onclick="fecharModalForce()">✕</button>
+    </div>
+    <div class="fg" style="margin-bottom:10px">
+      <label>Descrição <span id="mErrDesc" class="erro-msg">— obrigatório</span></label>
+      <input class="inp" id="mDesc" type="text" maxlength="50"/>
+    </div>
+    <div class="form-row">
+      <div class="fg" style="flex:1">
+        <label>Valor (R$) <span id="mErrVal" class="erro-msg">— inválido</span></label>
+        <input class="inp" id="mVal" type="text" inputmode="decimal"/>
+      </div>
+      <div class="fg" style="width:90px">
+        <label>Dia (05–19)</label>
+        <input class="inp" id="mDia" type="number" min="5" max="19"/>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-vd" onclick="salvarEdicao()" style="flex:1">💾 Salvar</button>
+      <button class="btn btn-vm" onclick="confirmarDelete()" style="flex:1">🗑 Excluir</button>
+    </div>
+    <div id="confirmDel" style="display:none;margin-top:10px;background:var(--vm-bg);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px;text-align:center;font-size:.82rem">
+      Tem certeza que deseja excluir?<br>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <button class="btn btn-vm" onclick="deletar()" style="padding:6px 16px">Sim, excluir</button>
+        <button class="btn btn-gh" onclick="cancelarDelete()" style="padding:6px 16px">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastEl"></div>
+
+<script>
+const SALDO_INI = 500;
+const DIAS_FORUM = [8,13,15];
+const DIA_INI = 5, DIA_FIM = 19;
+
+// ── STORAGE ──────────────────────────────────────
+let DB = [];
+try { DB = JSON.parse(localStorage.getItem('cmaiodb') || '[]'); } catch(e){}
+function salvar(){ localStorage.setItem('cmaiodb', JSON.stringify(DB)); }
+
+// ── HELPERS ──────────────────────────────────────
+function fmt(v){ return 'R$ '+parseFloat(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function hojeNum(){ return new Date().getDate(); }
+function diasRestantes(){
+  const agora = new Date();
+  const fim = new Date(2026,4,20,0,0,0);
+  return Math.max(0, Math.ceil((fim-agora)/86400000));
+}
+function totalGasto(){ return DB.reduce((a,l)=>a+l.valor,0); }
+function gastoNoDia(d){ return DB.filter(l=>l.dia===d).reduce((a,l)=>a+l.valor,0); }
+
+// Valida e parseia valor digitado (aceita "12,50" ou "12.50" ou "12")
+function parseValor(s){
+  if(!s || !s.trim()) return null;
+  const limpo = s.trim().replace(/[^\d,\.]/g,'').replace(',','.');
+  const v = parseFloat(limpo);
+  if(isNaN(v) || v <= 0) return null;
+  if(v > SALDO_INI * 2) return null; // valor absurdo
+  return Math.round(v*100)/100;
+}
+
+function toast(msg, tipo='ok', ms=2200){
+  const el = document.getElementById('toastEl');
+  el.textContent = msg;
+  el.className = 'toast '+tipo+' vis';
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ el.className='toast'; },ms);
+}
+
+// ── FORM PRINCIPAL ────────────────────────────────
+function setErro(campo, erroId, msg, show){
+  const inp = document.getElementById(campo);
+  const err = document.getElementById(erroId);
+  inp.classList.toggle('erro', show);
+  err.textContent = msg;
+  err.classList.toggle('vis', show);
+}
+
+function lancar(){
+  let ok = true;
+  const desc = document.getElementById('fDesc').value.trim();
+  const valStr = document.getElementById('fVal').value.trim();
+  const diaStr = document.getElementById('fDia').value.trim();
+
+  // Validar descrição
+  if(!desc){
+    setErro('fDesc','errDesc','— obrigatório',true);
+    document.getElementById('fDesc').focus();
+    ok = false;
+  } else { setErro('fDesc','errDesc','',false); }
+
+  // Validar valor
+  const val = parseValor(valStr);
+  if(!val){
+    const msg = !valStr ? '— obrigatório' : val===null && parseFloat(valStr.replace(',','.'))>SALDO_INI*2 ? '— valor muito alto' : '— número inválido';
+    setErro('fVal','errVal',msg,true);
+    if(ok){ document.getElementById('fVal').focus(); }
+    ok = false;
+  } else { setErro('fVal','errVal','',false); }
+
+  // Validar dia
+  let dia = parseInt(diaStr)||hojeNum();
+  if(dia < DIA_INI || dia > DIA_FIM){
+    toast('Dia deve ser entre 05 e 19','err');
+    document.getElementById('fDia').classList.add('erro');
+    ok = false;
+  } else { document.getElementById('fDia').classList.remove('erro'); }
+
+  if(!ok) return;
+
+  // Aviso se vai estourar saldo
+  const saldoAtual = SALDO_INI - totalGasto();
+  if(val > saldoAtual){
+    toast('⚠️ Este gasto ultrapassa o saldo disponível!','err',3000);
+  }
+
+  DB.push({ id:Date.now(), desc, valor:val, dia, ts:new Date().toISOString() });
+  salvar();
+  limparForm();
+  toast('✅ '+desc+' — '+fmt(val)+' lançado','ok');
+  renderAll();
+}
+
+function limparForm(){
+  document.getElementById('fDesc').value='';
+  document.getElementById('fVal').value='';
+  document.getElementById('fDia').value='';
+  ['fDesc','fVal','fDia'].forEach(id=>{ document.getElementById(id).classList.remove('erro','ok'); });
+  ['errDesc','errVal'].forEach(id=>{ document.getElementById(id).classList.remove('vis'); });
+}
+
+function rapido(desc, val){
+  document.getElementById('fDesc').value = desc;
+  document.getElementById('fVal').value = val;
+  if(val){ document.getElementById('fDia').focus(); }
+  else { document.getElementById('fVal').focus(); }
+}
+
+// ── MODAL EDIÇÃO ──────────────────────────────────
+let editId = null;
+
+function abrirModal(id){
+  editId = id;
+  const l = DB.find(x=>x.id===id);
+  if(!l) return;
+  document.getElementById('mDesc').value = l.desc;
+  document.getElementById('mVal').value = l.valor.toFixed(2).replace('.',',');
+  document.getElementById('mDia').value = l.dia;
+  document.getElementById('confirmDel').style.display='none';
+  ['mDesc','mVal','mDia'].forEach(id=>{ document.getElementById(id).classList.remove('erro','ok'); });
+  ['mErrDesc','mErrVal'].forEach(id=>{ document.getElementById(id).classList.remove('vis'); });
+  document.getElementById('modalBg').classList.add('vis');
+}
+
+function fecharModal(e){
+  if(e && e.target !== document.getElementById('modalBg')) return;
+  fecharModalForce();
+}
+function fecharModalForce(){
+  document.getElementById('modalBg').classList.remove('vis');
+  editId=null;
+}
+
+function salvarEdicao(){
+  const desc = document.getElementById('mDesc').value.trim();
+  const valStr = document.getElementById('mVal').value.trim();
+  const diaStr = document.getElementById('mDia').value.trim();
+  let ok = true;
+
+  if(!desc){
+    setErroModal('mDesc','mErrDesc','— obrigatório',true); ok=false;
+  } else { setErroModal('mDesc','mErrDesc','',false); }
+
+  const val = parseValor(valStr);
+  if(!val){
+    const msg = !valStr?'— obrigatório':'— número inválido';
+    setErroModal('mVal','mErrVal',msg,true); if(ok){ document.getElementById('mVal').focus(); } ok=false;
+  } else { setErroModal('mVal','mErrVal','',false); }
+
+  let dia = parseInt(diaStr)||hojeNum();
+  if(dia<DIA_INI||dia>DIA_FIM){
+    toast('Dia deve ser entre 05 e 19','err'); ok=false;
+    document.getElementById('mDia').classList.add('erro');
+  } else { document.getElementById('mDia').classList.remove('erro'); }
+
+  if(!ok) return;
+
+  const idx = DB.findIndex(x=>x.id===editId);
+  if(idx>=0){
+    DB[idx] = {...DB[idx], desc, valor:val, dia};
+    salvar();
+    toast('💾 Lançamento atualizado','info');
+    fecharModalForce();
+    renderAll();
+  }
+}
+
+function setErroModal(campo, erroId, msg, show){
+  document.getElementById(campo).classList.toggle('erro',show);
+  const e = document.getElementById(erroId);
+  e.textContent = msg; e.classList.toggle('vis',show);
+}
+
+function confirmarDelete(){
+  document.getElementById('confirmDel').style.display='block';
+}
+function cancelarDelete(){
+  document.getElementById('confirmDel').style.display='none';
+}
+function deletar(){
+  if(!editId) return;
+  const l = DB.find(x=>x.id===editId);
+  DB = DB.filter(x=>x.id!==editId);
+  salvar();
+  toast('🗑 "'+l.desc+'" removido','err');
+  fecharModalForce();
+  renderAll();
+}
+
+// ── FILTRO POR DIA ────────────────────────────────
+let filtro = null;
+function filtrarDia(d){
+  filtro = filtro===d?null:d;
+  document.getElementById('filtroLabel').textContent = filtro?'(dia '+filtro+')':'';
+  renderLista();
+  renderDias();
+}
+function limparFiltro(){ filtro=null; document.getElementById('filtroLabel').textContent=''; renderLista(); renderDias(); }
+
+// ── RENDER SALDO ──────────────────────────────────
+function renderSaldo(){
+  const total = totalGasto();
+  const saldo = SALDO_INI - total;
+  const pct   = Math.min(100, total/SALDO_INI*100);
+  const dr    = diasRestantes();
+  const teto  = dr>0?saldo/dr:0;
+
+  const el = document.getElementById('saldoEl');
+  el.textContent = fmt(saldo);
+  el.className = 'saldo-val '+(saldo>200?'ok':saldo>80?'warn':'crit');
+
+  document.getElementById('pGasto').textContent  = fmt(total);
+  document.getElementById('pTeto').textContent   = fmt(Math.max(0,teto))+'/dia';
+  document.getElementById('pDias').textContent   = dr;
+
+  const bar = document.getElementById('barEl');
+  bar.style.width = pct+'%';
+  bar.style.background = pct>85?'var(--vm)':pct>60?'var(--am)':'var(--vd)';
+  document.getElementById('barLeft').textContent = fmt(saldo)+' restam';
+  document.getElementById('barPct').textContent  = pct.toFixed(0)+'% usado';
+}
+
+// ── RENDER ALERTA ─────────────────────────────────
+function renderAlerta(){
+  const total = totalGasto();
+  const saldo = SALDO_INI - total;
+  const pct   = total/SALDO_INI*100;
+  const dr    = diasRestantes();
+  let html = '';
+  if(saldo < 0)
+    html='<div class="al crit"><span>🚨</span><div><b>Saldo negativo — '+fmt(Math.abs(saldo))+' além do limite</b>Evite qualquer gasto até o dia 20.</div></div>';
+  else if(pct>80)
+    html='<div class="al warn"><span>⚠️</span><div><b>'+pct.toFixed(0)+'% do orçamento gasto</b>Restam '+fmt(saldo)+' para '+dr+' dias. Só o essencial.</div></div>';
+  else if(dr<=2&&saldo>0)
+    html='<div class="al ok"><span>✅</span><div><b>Reta final!</b>'+dr+(dr===1?' dia':' dias')+' e '+fmt(saldo)+' sobrando. Chegou bem!</div></div>';
+  document.getElementById('alertaEl').innerHTML = html;
+}
+
+// ── RENDER DIAS ───────────────────────────────────
+function renderDias(){
+  const SEMS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const hj = hojeNum();
+  let html='';
+  for(let d=5;d<=19;d++){
+    const dt  = new Date(2026,4,d);
+    const sem = SEMS[dt.getDay()];
+    const g   = gastoNoDia(d);
+    const isForum = DIAS_FORUM.includes(d);
+    const isHj    = d===hj;
+    const isPass  = d<hj;
+    const tetoDia = 33.30 + (isForum?30:0);
+    const est     = g>tetoDia+5;
+    let cls='dia';
+    if(isHj)   cls+=' hoje';
+    if(isPass) cls+=' pass';
+    if(isForum)cls+=' forum';
+    if(g>0&&!est) cls+=' quitado';
+    if(est)    cls+=' estouro';
+    if(filtro===d) cls+=' sel';
+    html+='<div class="'+cls+'" onclick="filtrarDia('+d+')">'
+      +(isForum?'<div class="dia-ico">🍽️</div>':'')
+      +'<div class="dia-sem">'+sem+'</div>'
+      +'<div class="dia-num">'+d+'</div>'
+      +(g>0?'<div class="dia-val" style="color:'+(est?'var(--vm)':'var(--vd)')+'">'+fmt(g)+'</div>'
+           :'<div class="dia-val" style="color:var(--tx2)">—</div>')
+      +'</div>';
+  }
+  document.getElementById('diasEl').innerHTML=html;
+}
+
+// ── RENDER LISTA ──────────────────────────────────
+function renderLista(){
+  const lista = filtro
+    ? DB.filter(l=>l.dia===filtro).sort((a,b)=>b.ts.localeCompare(a.ts))
+    : [...DB].sort((a,b)=>b.ts.localeCompare(a.ts));
+
+  if(!lista.length){
+    document.getElementById('listaEl').innerHTML
+      ='<div style="text-align:center;color:var(--tx2);font-size:.8rem;padding:20px 0">Nenhum lançamento'+(filtro?' no dia '+filtro:'')+'. Tudo zerado ✅</div>';
+    return;
+  }
+
+  const ICOS={'Almoço Fórum':'🍽️','Combustível':'⛽','Mercado':'🛒','Farmácia':'💊','Padaria':'🥐','Transporte':'🚗'};
+  const html = lista.map(l=>{
+    const ico = Object.keys(ICOS).find(k=>l.desc.includes(k))||'💳';
+    const dt  = new Date(l.ts);
+    const meta= 'Dia '+l.dia+'/Mai  '+dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');
+    return '<div class="li">'
+      +'<div class="li-ico">'+(ICOS[ico]||'💳')+'</div>'
+      +'<div class="li-info"><div class="li-desc">'+l.desc+'</div><div class="li-meta">'+meta+'</div></div>'
+      +'<div class="li-val">'+fmt(l.valor)+'</div>'
+      +'<div class="li-acoes">'
+      +'<button class="li-btn" onclick="abrirModal('+l.id+')" title="Editar">✏️</button>'
+      +'</div></div>';
+  }).join('');
+  document.getElementById('listaEl').innerHTML=html;
+}
+
+// ── EXPORTAR ──────────────────────────────────────
+function exportar(){
+  if(!DB.length){ toast('Nenhum lançamento para exportar','err'); return; }
+  let txt='Data,Descrição,Valor\n';
+  [...DB].sort((a,b)=>a.dia-b.dia).forEach(l=>{ txt+=l.dia+'/05/2026,'+l.desc+','+l.valor.toFixed(2)+'\n'; });
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(txt);
+  a.download='gastos-mai-2026.csv'; a.click();
+  toast('📤 CSV exportado','info');
+}
+
+// ── TECLADO ───────────────────────────────────────
+document.getElementById('fDesc').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('fVal').focus(); });
+document.getElementById('fVal').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('fDia').focus(); });
+document.getElementById('fDia').addEventListener('keydown', e=>{ if(e.key==='Enter') lancar(); });
+document.getElementById('mDesc').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('mVal').focus(); });
+document.getElementById('mVal').addEventListener('keydown', e=>{ if(e.key==='Enter') salvarEdicao(); });
+
+// Preenche dia com hoje ao focar
+document.getElementById('fDia').addEventListener('focus',function(){ if(!this.value) this.value=hojeNum(); });
+
+// Validação em tempo real do valor
+function validaValorInline(inpId, errId){
+  const inp = document.getElementById(inpId);
+  inp.addEventListener('input',function(){
+    const v = parseValor(this.value);
+    if(this.value.trim()===''){this.classList.remove('erro','ok');document.getElementById(errId).classList.remove('vis');return;}
+    if(!v){ setErroModal(inpId,errId,'— número inválido',true); }
+    else if(v>SALDO_INI){ setErroModal(inpId,errId,'— maior que o saldo!',true); }
+    else { this.classList.remove('erro'); this.classList.add('ok'); document.getElementById(errId).classList.remove('vis'); }
+  });
+}
+// Reutiliza setErroModal para o form principal também
+function setErroModal(campo,erroId,msg,show){
+  const c=document.getElementById(campo); c.classList.toggle('erro',show); if(show)c.classList.remove('ok');
+  const e=document.getElementById(erroId); e.textContent=msg; e.classList.toggle('vis',show);
+}
+validaValorInline('fVal','errVal');
+validaValorInline('mVal','mErrVal');
+
+function renderAll(){ renderSaldo(); renderAlerta(); renderDias(); renderLista(); }
+renderAll();
+</script>
+</body>
+</html>
